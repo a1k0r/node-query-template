@@ -60,6 +60,25 @@ const builtSQL = escapeParams(sqlWithBalance, {score: 10, minBalance: 150}) // =
 
 ### Query with cyclic template example
 
+```js
+const getTurns = {
+    sql: `
+        SELECT id
+          FROM turns
+          WHERE ({{#games}});
+        `,
+    addons: {
+        games: {
+            options: {propertyName: 'gamesData', delimiter: 'OR'},
+            sql: '(game_id BETWEEN :minGameID AND :maxGameID)',
+        },
+    },
+};
+
+const sql = qt.buildQuery(getTurns, {gamesData: [{minGameID: 1, maxGameID: 10}, {minGameID: 100, maxGameID: 110}]});
+// => SELECT id FROM turns WHERE ((game_id BETWEEN '1' AND '10') OR (game_id BETWEEN '100' OR '110'));
+```
+
 ## Author
 
 Pavel Romanov -- alkor@alkor.pw -- [GitHub](https://github.com/Shikyaro)
