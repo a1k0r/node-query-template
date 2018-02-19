@@ -47,15 +47,19 @@ const {QueryTemplater, escapeParams} = require('query-template');
 
 const qt = new QueryTemplater();
 
-const sqlWithBalance = qt.buildQuery(getUsersByScore, {needBalance: true}); // => SELECT id FROM users WHERE score > :score AND balance >= :minBalance;
-const sqlWithoutBalance = qt.buildQuery(getUsersByScore, {}); // => SELECT id FROM users WHERE score > :score;
+const sqlWithBalance = qt.buildQuery(getUsersByScore, {needBalance: true}); 
+// => SELECT id FROM users WHERE score > :score AND balance >= :minBalance;
+
+const sqlWithoutBalance = qt.buildQuery(getUsersByScore, {}); 
+// => SELECT id FROM users WHERE score > :score;
 
 ```
 
 ### Param escaping example
 
 ```js
-const builtSQL = escapeParams(sqlWithBalance, {score: 10, minBalance: 150}) // => SELECT id FROM users WHERE score > '10' AND balance >= '150';
+const builtSQL = escapeParams(sqlWithBalance, {score: 10, minBalance: 150}) 
+// => SELECT id FROM users WHERE score > '10' AND balance >= '150';
 ```
 
 ### Query with cyclic template example
