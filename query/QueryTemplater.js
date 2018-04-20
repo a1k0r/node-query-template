@@ -1,5 +1,6 @@
 // const escapeParams = require('./escapeParams.js');
 const templatingStrategies = require('./templating-strategies');
+const {PostgresParametrizingStrategy} = require('./parametrizing-strategies');
 /**
  * @class
  */
@@ -9,11 +10,15 @@ class QueryTemplater {
      */
     constructor() {
         // TODO: think about query cache adding
-        this._paramSearchRegex = /\{\{(#)?([-\w]+)\}\}/gui;
+        this._templateSearchRegex = /\{\{(#)?([-\w]+)\}\}/gui;
+        this._paramSearchRegex = //gu
         /** @type Map<String,AbstractTemplatingStrategy> */
         this._templatingStrategies = new Map();
+        /** @type Map<String,AbstractParametrizingStrategy.class> */
+        this._parametrizingStrategies = new Map();
 
         this._initTemplatingStrategies();
+        this._initParametrizingStrategies();
     }
 
     /**
@@ -27,6 +32,10 @@ class QueryTemplater {
         }
     }
 
+    _initParametrizingStrategies() {
+        this._parametrizingStrategies.set('pg', PostgresParametrizingStrategy);
+    }
+
     /**
      * @param {string} querySQL sql
      * @param {Object} buildParams params to build query
@@ -37,7 +46,7 @@ class QueryTemplater {
     _processQuery({sql: querySQL, addons}, buildParams) {
         let resultQuery = querySQL;
         let matchArray;
-        while ((matchArray = this._paramSearchRegex.exec(querySQL)) !== null) {
+        while ((matchArray = this._templateSearchRegex.exec(querySQL)) !== null) {
             const [, prefix = '', additionName] = matchArray;
             const addon = addons[additionName];
             if (addon) {
@@ -59,6 +68,21 @@ class QueryTemplater {
         return resultQuery;
     }
 
+    _parametrizeQuery(sql, params, type = 'pg') {
+        let query = sql;
+        const Strategy = this._parametrizingStrategies.get(type);
+        if (!Strategy) {
+            throw new TypeError(`Invalid param generation type ${type}`);
+        }
+
+        const strat = new Strategy();
+        for (const paramName of Object.keys(params)) {
+            const pVal = strat.addParameter(params[paramName]);
+            query = query.replace(`:${paramName}`, pVal);
+        }
+        return query;
+    }
+
     /**
      * @param {String} name queryName
      * @param {Object} buildParams queryTemplateParams
@@ -66,8 +90,8 @@ class QueryTemplater {
      * @param {Object} addons queryTemplateAddons
      * @returns {String} built query
      */
-    buildQuery({name, sql, addons}, buildParams) {
-        return this._processQuery({sql, addons}, buildParams);
+    buildQuery({type, sql, addons}, buildParams) {
+        const result = this._processQuery({sql, addons}, buildParams);
     }
 }
 
