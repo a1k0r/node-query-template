@@ -11,7 +11,6 @@ class QueryTemplater {
     constructor() {
         // TODO: think about query cache adding
         this._templateSearchRegex = /\{\{(#)?([-\w]+)\}\}/gui;
-        this._paramSearchRegex = //gu
         /** @type Map<String,AbstractTemplatingStrategy> */
         this._templatingStrategies = new Map();
         /** @type Map<String,AbstractParametrizingStrategy.class> */
@@ -43,7 +42,7 @@ class QueryTemplater {
      * @returns {String} built query
      * @private
      */
-    _processQuery({sql: querySQL, addons}, buildParams) {
+    processTemplates({sql: querySQL, addons}, buildParams) {
         let resultQuery = querySQL;
         let matchArray;
         while ((matchArray = this._templateSearchRegex.exec(querySQL)) !== null) {
@@ -68,7 +67,14 @@ class QueryTemplater {
         return resultQuery;
     }
 
-    _parametrizeQuery(sql, params, type = 'pg') {
+
+    /**
+     * @param {String} sql query text
+     * @param {Object} params query params
+     * @param {String} type parametrization algorithm type
+     * @returns {{query:String,params:Array}} query and params ready-to-insert in db query method
+     */
+    parametrizeQuery(sql, params, type = 'pg') {
         let query = sql;
         const Strategy = this._parametrizingStrategies.get(type);
         if (!Strategy) {
@@ -80,7 +86,10 @@ class QueryTemplater {
             const pVal = strat.addParameter(params[paramName]);
             query = query.replace(`:${paramName}`, pVal);
         }
-        return query;
+        return {
+            query,
+            params: strat.getParams(),
+        };
     }
 
     /**
@@ -91,7 +100,9 @@ class QueryTemplater {
      * @returns {String} built query
      */
     buildQuery({type, sql, addons}, buildParams) {
-        const result = this._processQuery({sql, addons}, buildParams);
+        const result = this.processTemplates({sql, addons}, buildParams);
+        const parametrized = this.parametrizeQuery(result, buildParams, type);
+        return parametrized;
     }
 }
 
