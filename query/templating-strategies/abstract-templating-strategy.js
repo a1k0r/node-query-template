@@ -40,7 +40,7 @@ class AbstractTemplatingStrategy {
      * @param {string} addonText addon text from query
      * @returns {boolean} is this strategy appliable to presented addon
      */
-    isStrategyAppliable(addonText) {
+    isStrategyApplicable(addonText) {
         return addonText.slice(0, this._leadingSequence.length) === this._leadingSequence;
     }
 

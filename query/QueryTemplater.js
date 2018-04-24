@@ -1,4 +1,3 @@
-// const escapeParams = require('./escapeParams.js');
 const templatingStrategies = require('./templating-strategies');
 const {PostgresParametrizingStrategy} = require('./parametrizing-strategies');
 /**
@@ -31,6 +30,9 @@ class QueryTemplater {
         }
     }
 
+    /**
+     * @protected
+     */
     _initParametrizingStrategies() {
         this._parametrizingStrategies.set('pg', PostgresParametrizingStrategy);
     }
@@ -40,7 +42,6 @@ class QueryTemplater {
      * @param {Object} buildParams params to build query
      * @param {Object} addons addons definition
      * @returns {String} built query
-     * @private
      */
     processTemplates({sql: querySQL, addons}, buildParams) {
         let resultQuery = querySQL;
@@ -83,8 +84,11 @@ class QueryTemplater {
 
         const strat = new Strategy();
         for (const paramName of Object.keys(params)) {
-            const pVal = strat.addParameter(params[paramName]);
-            query = query.replace(`:${paramName}`, pVal);
+            const paramRex = new RegExp(`:${paramName}`, 'gu');
+            if (query.search(paramRex) !== -1) {
+                const pVal = strat.addParameter(params[paramName]);
+                query = query.replace(paramRex, pVal);
+            }
         }
         return {
             query,

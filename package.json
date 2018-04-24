@@ -9,15 +9,14 @@
   "license": "MIT",
   "version": "0.0.1",
   "scripts": {
-    "autofix": "eslint --fix ."
+    "autofix": "eslint --fix .",
+    "test": "node_modules//bin/jest test"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
-    "chai": "^4.1.2",
     "eslint": "^4.16.0",
     "eslint-config-google": "^0.9.1",
     "eslint-plugin-import": "^2.8.0",
-    "mocha": "^5.0.1"
+    "jest": "^22.4.3"
   }
 }
