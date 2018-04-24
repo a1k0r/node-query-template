@@ -1,20 +1,22 @@
 {
-  "name": "query-template",
+  "name": "node-query-template",
   "author": "Pavel Romanov <alkor@alkor.pw>",
   "repository": {
     "type": "git",
     "url": "git://github.com/Shikyaro/node-query-template.git"
   },
+  "main": "index.js",
   "license": "MIT",
   "version": "0.0.1",
   "scripts": {
-    "autofix": "eslint --fix ."
+    "autofix": "eslint --fix .",
+    "test": "node_modules//bin/jest test"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "eslint": "^4.16.0",
     "eslint-config-google": "^0.9.1",
-    "eslint-plugin-import": "^2.8.0"
+    "eslint-plugin-import": "^2.8.0",
+    "jest": "^22.4.3"
   }
 }

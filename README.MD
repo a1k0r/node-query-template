@@ -1,5 +1,5 @@
 # node-query-template
-> Node.js library for SQL queries templating and parameters escaping
+> Node.js library for SQL queries templating and parameters wrapping
 
 [![NPM Version][npm-image]][npm-url]
 
@@ -11,9 +11,9 @@ npm install node-query-template
 
 ## Features
 
-* Simple templating, f.e. `{{templateName}}`
-* Cyclic templates by `#` prefix, f.e. iteration over array of objects and passing it to query
-* Named parameters escaping, f.e. `:namedParameter`
+* Simple templating, e.g. `{{templateName}}`
+* Named parameters wrapping, e.g. `:namedParameter`
+* Parameterizing and templating can be simply extended by adding new strategy
 
 ## Dependencies
 
@@ -43,44 +43,29 @@ const getUsersByScore = {
 ### Simple query building example
 
 ```js
-const {QueryTemplater, escapeParams} = require('query-template');
+const QueryTemplater = require('query-template');
 
 const qt = new QueryTemplater();
 
-const sqlWithBalance = qt.buildQuery(getUsersByScore, {needBalance: true}); 
+const sqlWithBalance = qt.processTemplates(getUsersByScore, {needBalance: true}); 
 // => SELECT id FROM users WHERE score > :score AND balance >= :minBalance;
 
-const sqlWithoutBalance = qt.buildQuery(getUsersByScore, {}); 
+const sqlWithoutBalance = qt.processTemplates(getUsersByScore, {}); 
 // => SELECT id FROM users WHERE score > :score;
 
 ```
 
-### Param escaping example
+### Parametrizing example
 
 ```js
-const builtSQL = escapeParams(sqlWithBalance, {score: 10, minBalance: 150}) 
-// => SELECT id FROM users WHERE score > '10' AND balance >= '150';
+const builtSQL = qt.parametrizeQuery(sqlWithBalance, {score: 10, minBalance: 150})
 ```
-
-### Query with cyclic template example
-
+Result:
 ```js
-const getTurns = {
-    sql: `
-        SELECT id
-          FROM turns
-          WHERE ({{#games}});
-        `,
-    addons: {
-        games: {
-            options: {propertyName: 'gamesData', delimiter: 'OR'},
-            sql: '(game_id BETWEEN :minGameID AND :maxGameID)',
-        },
-    },
-};
-
-const sql = qt.buildQuery(getTurns, {gamesData: [{minGameID: 1, maxGameID: 10}, {minGameID: 100, maxGameID: 110}]});
-// => SELECT id FROM turns WHERE ((game_id BETWEEN '1' AND '10') OR (game_id BETWEEN '100' OR '110'));
+{
+    query: 'SELECT id FROM users WHERE score > $1 AND balance >= $2',
+    params: [10,150],
+}
 ```
 
 ## Author
