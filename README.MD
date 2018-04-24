@@ -6,7 +6,7 @@
 ## Installation
 
 ```sh
-npm install node-query-template
+npm install query-template
 ```
 
 ## Features
