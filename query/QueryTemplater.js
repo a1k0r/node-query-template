@@ -97,7 +97,7 @@ class QueryTemplater {
      * @param {Object} buildParams queryTemplateParams
      * @param {String} sql queryText
      * @param {Object} addons queryTemplateAddons
-     * @returns {String} built query
+     * @returns {{query:String,params:Array}} built query
      */
     buildQuery({type, sql, addons}, buildParams) {
         const result = this.processTemplates({sql, addons}, buildParams);

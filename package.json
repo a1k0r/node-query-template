@@ -5,6 +5,7 @@
     "type": "git",
     "url": "git://github.com/Shikyaro/node-query-template.git"
   },
+  "main": "index.js",
   "license": "MIT",
   "version": "0.0.1",
   "scripts": {
