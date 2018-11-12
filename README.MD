@@ -13,7 +13,8 @@ npm install query-template
 
 * Simple templating, e.g. `{{templateName}}`
 * Named parameters wrapping, e.g. `:namedParameter`
-* Parameterizing and templating can be simply extended by adding new strategy
+* Parameterizing and templating can be simply extended by adding new parameterizer
+* Params can be wrapped for Postgres (`$1`) and MySQL (`?`) format
 
 ## Dependencies
 
@@ -64,7 +65,7 @@ Result:
 ```js
 {
     query: 'SELECT id FROM users WHERE score > $1 AND balance >= $2',
-    params: [10,150],
+    params: [10,150]
 }
 ```
 

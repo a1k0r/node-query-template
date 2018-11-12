@@ -67,7 +67,7 @@ describe('Library parameterizer with pg type', () => {
         const {query, params} = templater.parametrizeQuery(simpleQuery.sql, simpleParams, simpleQuery.type);
 
         expect(query).toBe('SELECT * FROM table WHERE money = $1 {{rank}}');
-        expect(params).toMatchObject([1000]);
+        expect(params).toMatchObject([1000, 10]);
     });
 
     test('should have valid params output on repeated params', () => {
@@ -86,6 +86,79 @@ describe('Library parameterizer with pg type', () => {
 
         expect(query).toBe('$1 $2 $3 $1 $1 $1 $2 $3');
         expect(params).toMatchObject([1, 'test', 0.1]);
+    });
+});
+
+describe('Library parameterizer with mysql type', () => {
+    const templater = new QueryTemplater();
+
+    test('should handle simple mysql query without templates', () => {
+        const simpleQuery = {
+            sql: 'SELECT * FROM table WHERE id = :id',
+            type: 'mysql',
+        };
+
+        const simpleParams = {
+            id: 1,
+        };
+
+        const {query, params} = templater.parametrizeQuery(simpleQuery.sql, simpleParams, simpleQuery.type);
+
+        expect(query).toBe('SELECT * FROM table WHERE id = ?');
+        expect(params).toMatchObject([1]);
+    });
+
+    test('should throw on non-presented params', () => {
+        const simpleQuery = {
+            sql: 'SELECT * FROM table WHERE id = :id',
+            type: 'mysql',
+        };
+
+        const simpleParams = {
+        };
+
+        expect(() => templater.parametrizeQuery(simpleQuery.sql, simpleParams, simpleQuery.type)).toThrow();
+    });
+
+    test('should not touch addons', () => {
+        const simpleQuery = {
+            sql: 'SELECT * FROM table WHERE money = :money {{rank}}',
+            type: 'mysql',
+            addons: {
+                rank: {
+                    sql: 'AND rank < :rank',
+                    additionOptions: {propertyName: 'rank'},
+                },
+            },
+        };
+
+        const simpleParams = {
+            money: 1000,
+            rank: 10,
+        };
+
+        const {query, params} = templater.parametrizeQuery(simpleQuery.sql, simpleParams, simpleQuery.type);
+
+        expect(query).toBe('SELECT * FROM table WHERE money = ? {{rank}}');
+        expect(params).toMatchObject([1000]);
+    });
+
+    test('should have valid params output on repeated params', () => {
+        const simpleQuery = {
+            sql: ':id :name :value :id :id :id :name :value',
+            type: 'mysql',
+        };
+
+        const simpleParams = {
+            id: 1,
+            name: 'test',
+            value: 0.1,
+        };
+
+        const {query, params} = templater.parametrizeQuery(simpleQuery.sql, simpleParams, simpleQuery.type);
+
+        expect(query).toBe('? ? ? ? ? ? ? ?');
+        expect(params).toMatchObject([1, 'test', 0.1, 1, 1, 1, 'test', 0.1]);
     });
 });
 

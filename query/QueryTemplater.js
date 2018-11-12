@@ -1,5 +1,7 @@
 const templatingStrategies = require('./templating-strategies');
-const {PostgresParametrizingStrategy} = require('./parametrizing-strategies');
+
+const parameterizers = require('./parameterizers');
+
 /**
  * @class
  */
@@ -12,11 +14,11 @@ class QueryTemplater {
         this._templateSearchRegex = /\{\{(#)?([-\w]+)\}\}/gui;
         /** @type Map<String,AbstractTemplatingStrategy> */
         this._templatingStrategies = new Map();
-        /** @type Map<String,AbstractParametrizingStrategy.class> */
-        this._parametrizingStrategies = new Map();
+        /** @type Map<String,BaseParameterizer> */
+        this._parameterizers = new Map();
 
         this._initTemplatingStrategies();
-        this._initParametrizingStrategies();
+        this._initParameterizers();
     }
 
     /**
@@ -33,8 +35,13 @@ class QueryTemplater {
     /**
      * @protected
      */
-    _initParametrizingStrategies() {
-        this._parametrizingStrategies.set('pg', PostgresParametrizingStrategy);
+    _initParameterizers() {
+        for (const par in parameterizers) {
+            if (Object.prototype.hasOwnProperty.call(parameterizers, par)) {
+                const param = new parameterizers[par];
+                this._parameterizers.set(param.type, param);
+            }
+        }
     }
 
     /**
@@ -76,24 +83,13 @@ class QueryTemplater {
      * @returns {{query:String,params:Array}} query and params ready-to-insert in db query method
      */
     parametrizeQuery(sql, params, type = 'pg') {
-        let query = sql;
-        const Strategy = this._parametrizingStrategies.get(type);
-        if (!Strategy) {
-            throw new TypeError(`Invalid param generation type ${type}`);
+        if (this._parameterizers.has(type)) {
+            const parameterizer = this._parameterizers.get(type);
+            const result = parameterizer.parameterize(sql, params);
+            return result;
         }
 
-        const strat = new Strategy();
-        for (const paramName of Object.keys(params)) {
-            const paramRex = new RegExp(`:${paramName}`, 'gu');
-            if (query.search(paramRex) !== -1) {
-                const pVal = strat.addParameter(params[paramName]);
-                query = query.replace(paramRex, pVal);
-            }
-        }
-        return {
-            query,
-            params: strat.getParams(),
-        };
+        throw new TypeError(`No parameterizer found for query type ${type}`);
     }
 
     /**
