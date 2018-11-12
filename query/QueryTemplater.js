@@ -1,5 +1,4 @@
 const templatingStrategies = require('./templating-strategies');
-const {PostgresParametrizingStrategy} = require('./parametrizing-strategies');
 
 const parameterizers = require('./parameterizers');
 
