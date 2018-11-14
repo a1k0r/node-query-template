@@ -67,7 +67,7 @@ describe('Library parameterizer with pg type', () => {
         const {query, params} = templater.parametrizeQuery(simpleQuery.sql, simpleParams, simpleQuery.type);
 
         expect(query).toBe('SELECT * FROM table WHERE money = $1 {{rank}}');
-        expect(params).toMatchObject([1000, 10]);
+        expect(params).toMatchObject([1000]);
     });
 
     test('should have valid params output on repeated params', () => {
