@@ -19,8 +19,11 @@ class PgParameterizer extends BaseParameterizer {
 
         let index = 0;
         for (const param of Object.keys(params)) {
-            resultParams.push(params[param]);
-            resultQuery = resultQuery.replace(new RegExp(`:${param}`, 'gu'), `$${++index}`);
+            const rexp = new RegExp(`:${param}`, 'gu');
+            if (rexp.test(query)) {
+                resultParams.push(params[param]);
+                resultQuery = resultQuery.replace(rexp, `$${++index}`);
+            }
         }
 
         return {
